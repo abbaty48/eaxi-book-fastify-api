@@ -1,33 +1,3 @@
-# EAXI ONLINE BOOKSHOP API
-    **OBJECTIVE** A fastify api for serving eaxi-books an online ecommerce web application/api.
-    **DATABASE** PostgreSQL
-    **FRAMEWORK**: Fastify
-    **LANGUAGE**: javascript
-    **PACKAGES**: Fastify-Plugin, @fastify/auth, @fastify/cors, @fastify/jwt, bcrypt, dotenv, @fastify/postgres, @fastify/helmet
-    **VERSION**: 1.0
-    **ENGINEER**: Abbatyya - abbaty48@gmail.com
-
-## DATABASE TABLES
--  books
--  book_authors
--  book_tags
--  book_categories
--  categories
--  authors
--  customers
--  wishlists
--  wishlist_items
--  carts
--  cart_items
--  orders
--  order_items
--  reviews
-
-### TABLES SCHEMAS
-
-
- **publishers**
-```
 CREATE TABLE publishers (
     publisher_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     name VARCHAR(255) NOT NULL,
@@ -37,10 +7,7 @@ CREATE TABLE publishers (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
-```
 
-**authors**
-```
 CREATE TABLE authors (
     author_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     name VARCHAR(100) NOT NULL,
@@ -50,29 +17,20 @@ CREATE TABLE authors (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
-```
 
-**categories**
-```
 CREATE TABLE categories (
     category_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     name VARCHAR(100) NOT NULL UNIQUE,
     description TEXT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
-```
 
-**tags**
-```
 CREATE TABLE tags (
     tag_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     name VARCHAR(50) NOT NULL UNIQUE,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
-```
 
-**books**
-```
 CREATE TABLE books (
     book_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     title VARCHAR(255) NOT NULL,
@@ -91,37 +49,25 @@ CREATE TABLE books (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
-```
 
-**book_authors**
-```
 CREATE TABLE book_authors (
     book_id UUID REFERENCES books(book_id) ON DELETE CASCADE,
     author_id UUID REFERENCES authors(author_id) ON DELETE CASCADE,
     PRIMARY KEY (book_id, author_id)
 );
-```
 
-**book_categories**
-```
 CREATE TABLE book_categories (
     book_id UUID REFERENCES books(book_id) ON DELETE CASCADE,
     category_id UUID REFERENCES categories(category_id) ON DELETE CASCADE,
     PRIMARY KEY (book_id, category_id)
 );
-```
 
-**book_tags**
-```
 CREATE TABLE book_tags (
     book_id UUID REFERENCES books(book_id) ON DELETE CASCADE,
     tag_id UUID REFERENCES tags(tag_id) ON DELETE CASCADE,
     PRIMARY KEY (book_id, tag_id)
 );
-```
 
-**customers**
-```
 CREATE TABLE customers (
     customer_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     name VARCHAR(100) NOT NULL,
@@ -132,10 +78,7 @@ CREATE TABLE customers (
     profile JSONB,
     CONSTRAINT valid_profile CHECK (profile IS NULL OR jsonb_typeof(profile) = 'object')
 );
-```
 
-**carts**
-```
 CREATE TABLE carts (
     cart_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     customer_id UUID REFERENCES customers(customer_id) ON DELETE CASCADE,
@@ -144,10 +87,7 @@ CREATE TABLE carts (
     coupon_code VARCHAR(20),
     is_active BOOLEAN DEFAULT TRUE
 );
-```
 
-**cart_items**
-```
 CREATE TABLE cart_items (
     cart_item_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     cart_id UUID REFERENCES carts(cart_id) ON DELETE CASCADE,
@@ -156,10 +96,7 @@ CREATE TABLE cart_items (
     added_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     UNIQUE (cart_id, book_id)
 );
-```
 
-**wishlists**
-```
 CREATE TABLE wishlists (
     wishlist_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     customer_id UUID REFERENCES customers(customer_id) ON DELETE CASCADE,
@@ -168,10 +105,7 @@ CREATE TABLE wishlists (
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     is_public BOOLEAN DEFAULT FALSE
 );
-```
 
-**wishlist_items**
-```
 CREATE TABLE wishlist_items (
     wishlist_item_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     wishlist_id UUID REFERENCES wishlists(wishlist_id) ON DELETE CASCADE,
@@ -180,10 +114,7 @@ CREATE TABLE wishlist_items (
     notes TEXT,
     UNIQUE (wishlist_id, book_id)
 );
-```
 
-**orders**
-```
 CREATE TABLE orders (
     order_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     customer_id UUID REFERENCES customers(customer_id) ON DELETE SET NULL,
@@ -196,10 +127,7 @@ CREATE TABLE orders (
     tracking_number VARCHAR(100),
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
-```
 
-**order_items**
-```
 CREATE TABLE order_items (
     order_item_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     order_id UUID REFERENCES orders(order_id) ON DELETE CASCADE,
@@ -208,10 +136,7 @@ CREATE TABLE order_items (
     unit_price DECIMAL(10, 2) NOT NULL CHECK (unit_price > 0),
     discount DECIMAL(10, 2) DEFAULT 0 CHECK (discount >= 0)
 );
-```
 
-**admins**
-```
 CREATE TABLE admins (
     admin_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     name VARCHAR(100) NOT NULL,
@@ -223,10 +148,7 @@ CREATE TABLE admins (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
-```
 
-**reviews**
-```
 CREATE TABLE reviews (
     review_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     book_id UUID REFERENCES books(book_id) ON DELETE CASCADE,
@@ -239,47 +161,3 @@ CREATE TABLE reviews (
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     UNIQUE (book_id, customer_id)
 );
-```
-
-**API ENDPOINTS**
-| Endpoint | Method | Description |
-|----------|--------|-------------|
-| `*` | `PATCH` | Handle application general error |
-| `/` | `GET` | Return application informations |
-| `/api/` | `GET` | Return Application information  |
-| `/api/books` | `GET` | List all books |
-| `/api/books/{id}` | `GET` | Get book details |
-| `/api/books/search?q={query}` | `GET` | Search for books |
-| `/api/books/filter?category={id}` | `GET` | Filter books by category |
-| `/api/books/{limit}/{pageIndex}` | `GET` | Get books by paginations  |
-| `/api/books` | `POST` | Add a new book |
-| `/api/books/{id}` | `PATCH` | Update a book |
-| `/api/books/{id}` | `DELETE` | Delete a book  |
-| `/api/authors` | `GET` | List all authors |
-| `/api/authors/{id}` | `GET` | Get a author details |
-| `/api/authors/search?q={query}` | `GET` | Query a author |
-| `/api/authors/{id}` | `PATCH` | Update a author |
-| `/api/orders` | `GET` | List all orders |
-| `/api/orders` | `PATCH` | Update a orders |
-| `/api/orders/search?q={query}`| `GET` | Query for an order |
-| `/api/carts`| `GET` | List for all carts |
-| `/api/carts`| `POST` | Add a cart to carts |
-| `/api/carts/{id}`| `GET` | Get cart details |
-| `/api/carts/{id}` | `PATCH` | Update a cart detail |
-| `/api/carts/search?q={query}` | `GET` | Query a cart details |
-| `/api/wishlists` | `GET` | List all wishlists |
-| `/api/wishlists/{id}` | `PATCH` | Update a wishlist |
-| `/api/wishlists/search?q={query}` | `GET` | Query wishlists |
-| `/api/customers` | `GET` | List all customers |
-| `/api/customers/{id}` | `GET` | Get a customer details |
-| `/api/customers/search?q={query}` | `GET` | Query a customer('s) |
-| `/api/customers/{id}/carts` | `GET` | List customer carts |
-| `/api/customers/orders` | `GET` | List customer carts |
-| `/api/customers/` | `POST` | Register/Login a customer |
-| `/api/customers/` | `PUT` | Update a customer details|
-| `/api/customers/{id}` | `DELETE` | Delete a customer |
-| `/api/reviews` | `GET` | List all reviews |
-| `/api/reviews` | `POST` | Add a review |
-| `/api/reviews/{id}` | `GET` | Detail a review |
-| `/api/reviews/{id}` | `DELETE` | Delete a reviews |
-`

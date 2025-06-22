@@ -12,6 +12,6 @@ export default async function () {
   await app.register(fastifyCors, { origin: "*" }); // change this to refer to the website url only
   await app.register(fastifyHelmet, { global: true });
   await app.register(datasourcePlugin);
-  await app.register(appRoutes);
+  await app.register(appRoutes, { prefix: "/api" });
   return app;
 }
