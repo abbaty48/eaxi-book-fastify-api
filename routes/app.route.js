@@ -1,3 +1,5 @@
+import adminRoutes from "./admin.routes.js";
+
 export default async function (app) {
   app.get("/", async (_) => {
     return {
@@ -9,4 +11,5 @@ export default async function (app) {
         "A fastify api for serving eaxi-books an online ebooks ecommerce web application",
     };
   });
+  app.register(adminRoutes);
 }
