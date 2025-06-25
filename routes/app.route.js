@@ -1,4 +1,5 @@
 import adminRoutes from "./admin.routes.js";
+import authorRoutes from "./author.routes.js";
 
 export default async function (app) {
   app.get("/", async (_) => {
@@ -12,4 +13,5 @@ export default async function (app) {
     };
   });
   app.register(adminRoutes);
+  app.register(authorRoutes);
 }
