@@ -1,6 +1,7 @@
 import fastify from "fastify";
 import utilsPlugin from "./utils.plugin.js";
 import fastifyCors from "@fastify/cors";
+import oauthPlugin from "./oauth.plugin.js";
 import fastifyHelmet from "@fastify/helmet";
 import appRoutes from "../routes/app.route.js";
 import datasourcePlugin from "./datasources/datasource.plugin.js";
@@ -13,6 +14,7 @@ export default async function () {
   await app.register(fastifyCors, { origin: "*" }); // change this to refer to the website url only
   await app.register(fastifyHelmet, { global: true });
   await app.register(datasourcePlugin);
+  await app.register(oauthPlugin);
   await app.register(utilsPlugin);
   await app.register(appRoutes, { prefix: "/api" });
   return app;

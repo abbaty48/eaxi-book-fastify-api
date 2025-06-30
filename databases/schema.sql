@@ -72,10 +72,12 @@ CREATE TABLE customers (
     customer_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     name VARCHAR(100) NOT NULL,
     email VARCHAR(100) UNIQUE NOT NULL CHECK (email ~* '^[A-Za-z0-9._%-]+@[A-Za-z0-9.-]+[.][A-Za-z]+$'),
-    password_hash VARCHAR(255) NOT NULL,
+    password_hash VARCHAR(255),
+    account_type VARCHAR(11) NOT NULL CHECK (account_type IN('local', 'oauth', 'local&oauth')),
     join_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     last_login TIMESTAMP,
     profile JSONB,
+  	CONSTRAINT required_passwd CHECK (NOT(account_type = 'local' AND password_hash IS NULL)),
     CONSTRAINT valid_profile CHECK (profile IS NULL OR jsonb_typeof(profile) = 'object')
 );
 
