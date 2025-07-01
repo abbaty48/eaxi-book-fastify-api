@@ -1,5 +1,6 @@
 import adminRoutes from "./admin.routes.js";
 import authorRoutes from "./author.routes.js";
+import categoryRoutes from "./category.routes.js";
 import customerRoutes from "./customer.routes.js";
 
 export default async function (app) {
@@ -29,4 +30,5 @@ export default async function (app) {
   app.register(adminRoutes);
   app.register(authorRoutes);
   app.register(customerRoutes);
+  app.register(categoryRoutes);
 }
