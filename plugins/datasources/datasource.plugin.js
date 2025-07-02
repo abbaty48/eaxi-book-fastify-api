@@ -4,6 +4,7 @@ import authorDatasource from "./author.datasource.js";
 import adminDatasource from "./admin.datasource.plugin.js";
 import categoryDatasource from "./category.datasource.plugin.js";
 import customerDatasource from "./customer.datasource.plugin.js";
+import publisherDatasource from "./publisher.datasource.plugin.js";
 
 export default fastifyPlugin(async (app) => {
   app.log.info(`Connecting to database...`);
@@ -15,5 +16,6 @@ export default fastifyPlugin(async (app) => {
     ...authorDatasource(app),
     ...customerDatasource(app),
     ...categoryDatasource(app),
+    ...publisherDatasource(app),
   });
 });
