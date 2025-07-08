@@ -1,5 +1,6 @@
 import fastifyPlugin from "fastify-plugin";
 import fastifyPostgres from "@fastify/postgres";
+import cartDatasource from "./cart.datasource.js";
 import authorDatasource from "./author.datasource.js";
 import adminDatasource from "./admin.datasource.plugin.js";
 import categoryDatasource from "./category.datasource.plugin.js";
@@ -17,5 +18,6 @@ export default fastifyPlugin(async (app) => {
     ...customerDatasource(app),
     ...categoryDatasource(app),
     ...publisherDatasource(app),
+    ...cartDatasource(app),
   });
 });
