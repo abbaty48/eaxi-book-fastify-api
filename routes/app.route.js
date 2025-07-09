@@ -1,6 +1,7 @@
+import cartRoutes from "./cart.routes.js";
 import adminRoutes from "./admin.routes.js";
 import authorRoutes from "./author.routes.js";
-import cartRoutes from "./cart.routes.js";
+import wishlistRoutes from "./wishlist.routes.js";
 import categoryRoutes from "./category.routes.js";
 import customerRoutes from "./customer.routes.js";
 import publisherRoutes from "./publisher.routes.js";
@@ -34,5 +35,6 @@ export default async function (app) {
   app.register(customerRoutes);
   app.register(categoryRoutes);
   app.register(publisherRoutes);
+  app.register(wishlistRoutes);
   app.register(cartRoutes);
 }

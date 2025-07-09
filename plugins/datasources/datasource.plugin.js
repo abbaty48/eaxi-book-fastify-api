@@ -3,6 +3,7 @@ import fastifyPostgres from "@fastify/postgres";
 import cartDatasource from "./cart.datasource.js";
 import authorDatasource from "./author.datasource.js";
 import adminDatasource from "./admin.datasource.plugin.js";
+import wishlistDatasource from "./wishlist.datasource.plugin.js";
 import categoryDatasource from "./category.datasource.plugin.js";
 import customerDatasource from "./customer.datasource.plugin.js";
 import publisherDatasource from "./publisher.datasource.plugin.js";
@@ -18,6 +19,7 @@ export default fastifyPlugin(async (app) => {
     ...customerDatasource(app),
     ...categoryDatasource(app),
     ...publisherDatasource(app),
+    ...wishlistDatasource(app),
     ...cartDatasource(app),
   });
 });
