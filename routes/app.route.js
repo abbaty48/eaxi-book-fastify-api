@@ -1,3 +1,4 @@
+import tagRoutes from "./tag.routes.js";
 import cartRoutes from "./cart.routes.js";
 import adminRoutes from "./admin.routes.js";
 import authorRoutes from "./author.routes.js";
@@ -37,4 +38,5 @@ export default async function (app) {
   app.register(publisherRoutes);
   app.register(wishlistRoutes);
   app.register(cartRoutes);
+  app.register(tagRoutes);
 }
