@@ -4,6 +4,7 @@ import cartDatasource from "./cart.datasource.js";
 import tagDatasource from "./tag.datasource.plugin.js";
 import authorDatasource from "./author.datasource.js";
 import adminDatasource from "./admin.datasource.plugin.js";
+import reviewDatasource from "./review.datasource.plugin.js";
 import wishlistDatasource from "./wishlist.datasource.plugin.js";
 import categoryDatasource from "./category.datasource.plugin.js";
 import customerDatasource from "./customer.datasource.plugin.js";
@@ -21,6 +22,7 @@ export default fastifyPlugin(async (app) => {
     ...categoryDatasource(app),
     ...publisherDatasource(app),
     ...wishlistDatasource(app),
+    ...reviewDatasource(app),
     ...cartDatasource(app),
     ...tagDatasource(app),
   });
