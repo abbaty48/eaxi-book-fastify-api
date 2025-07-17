@@ -11,6 +11,7 @@ import customerRoutes from "./customer.routes.js";
 import publisherRoutes from "./publisher.routes.js";
 
 export default async function (app) {
+  /* */
   app.setErrorHandler(async (err, request, reply) => {
     if (err.validation) {
       reply.code(403);
@@ -20,10 +21,12 @@ export default async function (app) {
     reply.code(err.statusCode || 500);
     return "I'm sorry, there was an error processing your request.";
   });
-  app.setNotFoundHandler(async (request, reply) => {
+  /* */
+  app.setNotFoundHandler(async (_, reply) => {
     reply.code(404);
     return "I'm sorry, I couldn't find what you were looking for.";
   });
+  /* */
   app.get("/", async (_) => {
     return {
       api: "Eaxi-book api.",
@@ -34,16 +37,22 @@ export default async function (app) {
         "A fastify api for serving eaxi-books an online ebooks ecommerce web application",
     };
   });
-  /* TODO: Use chaining: chain the register methods and .after method to handle boot sequence error. */
-  app.register(adminRoutes); // refactor: strict mode: missing type "object" for keyword "properties" at "#" (strictTypes
-  app.register(authorRoutes);
-  app.register(customerRoutes);
-  app.register(publisherRoutes);
-  app.register(categoryRoutes);
-  app.register(wishlistRoutes);
-  app.register(reviewRoutes); // refactor: strict mode: missing type "object" for keyword "properties" at "#" (strictTypes
-  app.register(orderRoutes);
-  app.register(bookRoutes); // strict mode: missing type "object" for keyword "properties" at "#" (strictTypes
-  app.register(cartRoutes);
-  app.register(tagRoutes);
+  /* */
+  await app
+    .register(adminRoutes)
+    .register(authorRoutes)
+    .register(customerRoutes)
+    .register(publisherRoutes)
+    .register(categoryRoutes)
+    .register(wishlistRoutes)
+    .register(reviewRoutes) // refactor: strict mode: missing type "object" for keyword "properties" at "#" (strictTypes
+    .register(orderRoutes)
+    .register(bookRoutes) // strict mode: missing type "object" for keyword "properties" at "#" (strictTypes
+    .register(cartRoutes)
+    .register(tagRoutes)
+    .after((err) => {
+      app.log.error(
+        `Hmms, seems like one of route plugin has error: "${err?.message}", continuing anyway.`,
+      );
+    });
 }
