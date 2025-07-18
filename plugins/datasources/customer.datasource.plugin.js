@@ -3,11 +3,11 @@ export default function customerDatasource(app) {
     async getCustomer(email) {
       const connect = await app.pg.connect();
       try {
-        return await app.pg.query("SELECT * FROM customers WHERE email = $1", [
+        return await app.pg.query(`SELECT * FROM customers WHERE email = $1`, [
           email,
         ]);
       } catch (err) {
-        throw err;
+        return false;
       } finally {
         connect.release();
       }
@@ -16,11 +16,11 @@ export default function customerDatasource(app) {
       const connect = await app.pg.connect();
       try {
         return await app.pg.query(
-          ` SELECT * FROM customers
-            ORDER BY $1, $2
-            LIMIT $3 OFFSET $4
+          `SELECT * FROM customers
+            ORDER BY ${order_by} ${sort}
+            LIMIT $1 OFFSET $2
         `,
-          [order_by, sort, limit, page],
+          [limit, page],
         );
       } catch (err) {
         throw err;
@@ -28,75 +28,43 @@ export default function customerDatasource(app) {
         connect.release();
       }
     },
-    async addOrUpdateOauthCustomer(
+    async upsertCustomer(
       action,
-      { name, email, account_type, last_login, profile },
+      { name, email, account_type, last_login, profile, password_hash },
     ) {
       const connect = await app.pg.connect();
       try {
         if (action === "insert") {
-          return await app.pg.query(
+          await app.pg.query(
             "INSERT INTO customers(name, email, account_type, last_login, profile) VALUES($1,$2,$3,$4,$5)",
             [name, email, account_type, last_login, profile],
           );
-        } else {
-          return await app.pg.query(
+          return true;
+        } else if (action === "update") {
+          await app.pg.query(
             `UPDATE customers
-            SET name = $1, email =$2, account_type = $3, last_login = $4, profile = $5
+            SET name = $1, email =$2, account_type = $3, last_login = $4, profile = $5, password_hash = $6
             WHERE email = $2
             `,
-            [name, email, account_type, last_login, profile],
+            [name, email, account_type, last_login, profile, password_hash],
           );
+          return true;
         }
+        return false;
       } catch (err) {
+        // return false;
         throw err;
       } finally {
         connect.release();
       }
     },
-    async addOrUpdateLocalCustomer(
-      action,
-      { name, email, account_type, password_hash },
-    ) {
+    async removeCustomer(email) {
       const connect = await app.pg.connect();
       try {
-        if (action === "insert") {
-          return await app.pg.query(
-            "INSERT INTO customers(name, email, password_hash, account_type) VALUES($1,$2,$3,$4)",
-            [name, email, password_hash, account_type],
-          );
-        }
-        return null;
+        await app.pg.query("DELETE FROM customers WHERE email = $1", [email]);
+        return true;
       } catch (err) {
-        throw err;
-      } finally {
-        connect.release();
-      }
-    },
-    async updateCustomer({ id, name, bio, birth_date, nationality }) {
-      const connect = await app.pg.connect();
-      try {
-        return await app.pg.query(
-          `UPDATE customers
-          SET name=$2, bio=$3, birth_date=$4, nationality=$5
-          WHERE customer_id= $1`,
-          [id, name, bio, birth_date, nationality],
-        );
-      } catch (err) {
-        throw err;
-      } finally {
-        connect.release();
-      }
-    },
-    async removeCustomer(id) {
-      const connect = await app.pg.connect();
-      try {
-        return await app.pg.query(
-          "DELETE FROM customers WHERE customer_id = $1",
-          [id],
-        );
-      } catch (err) {
-        throw err;
+        return false;
       } finally {
         connect.release();
       }

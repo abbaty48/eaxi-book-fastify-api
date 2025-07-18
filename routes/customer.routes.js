@@ -1,12 +1,3 @@
-const idSchema = {
-  type: "object",
-  params: {
-    required: ["id"],
-    properties: {
-      id: { type: "string", maxLength: 36 },
-    },
-  },
-};
 const addSchema = {
   type: "object",
   required: ["name", "email", "password", "account_type"],
@@ -35,112 +26,107 @@ const updateSchema = {
     nationality: { type: "string" },
   },
 };
-const getSchema = {
-  type: "object",
-  query: {
-    properties: {
-      q: { type: "string" },
-      page: { type: "number", default: 0 },
-      limit: { type: "number", default: 10 },
-      order_by: { type: "string", default: "name" },
-      sort: { type: "string", enum: ["asc", "desc"], default: "asc" },
-    },
-  },
-};
 
 export default function (app) {
-  app.post("/customers/auth/gmail", async function (_, reply) {
-    return reply.redirect(app.googleOAuth2.getAuthorizedUri());
-  });
-  app.post("/customers/auth/gmail/callback", async function (req, reply) {
-    try {
-      const token =
-        await app.googleOAuth2.getAccessTokenFromAuthorizationCodeFlow(req);
-      if (token) {
-        const customer = (await app.source.getCustomer(token.email)).rows[0];
-        // check if customer exist with the same email
-        if (customer && token.email === customer?.email) {
-          // update customer's profile
-          await app.source.addOrUpdateOauthCustomer("update", {
-            ...token,
-            account_type: "local&oauth",
-            last_login: new Date(Date.now()),
-          });
-          return { token };
-        } else {
-          // if no - then add the customer details
-          await app.source.addOrUpdateOauthCustomer("insert", {
-            ...token,
-            account_type: "oauth",
-            last_login: new Date(Date.now()),
-          });
-          return { token };
+  app
+    .get("/customers", {
+      schema: app.schemas.getSchema({ order_by: "join_date" }),
+      handler: async (req) => {
+        return (await app.source.getCustomers(req.query))?.rows ?? [];
+      },
+    })
+    .get("/customers/:email", {
+      scheme: app.schemas.idSchema,
+      handler: async (req) =>
+        (await app.source.getCustomer(req.params.email))?.rows[0] ?? null,
+    })
+    .post("/customers/auth/gmail", {
+      handler: async function (_, reply) {
+        return reply.redirect(app.googleOAuth2.getAuthorizedUri());
+      },
+    })
+    .post("/customers/auth/gmail/callback", {
+      handler: async function (req, reply) {
+        try {
+          const token =
+            await app.googleOAuth2.getAccessTokenFromAuthorizationCodeFlow(req);
+          if (token) {
+            const customer =
+              (await app.source.getCustomer(token.email))?.rows[0] ?? null;
+            // check if customer exist with the same email
+            if (customer && token.email === customer?.email) {
+              // update customer's profile
+              await app.source.upsertCustomer("update", {
+                ...token,
+                account_type: "local&oauth",
+                last_login: new Date(Date.now()),
+              });
+              return { token };
+            } else {
+              // if no - then add the customer details
+              await app.source.upsertCustomer("insert", {
+                ...token,
+                account_type: "oauth",
+                last_login: new Date(Date.now()),
+              });
+              return { token };
+            }
+          }
+          return false;
+        } catch (err) {
+          return false;
         }
-      }
-      return reply.status(500).send("Authentication failed.");
-    } catch (err) {
-      return reply.status(500).send("Authentication failed.");
-    }
-  });
-  app.get("/customers", { scheme: getSchema }, async (req) => {
-    return (await app.source.getCustomers(req.query)).rows;
-  });
-  app.get("/customers/:id", { scheme: idSchema }, async (req) => {
-    const result = (await app.source.getCustomer(req.params.id)).rows[0];
-    if (result) {
-      return result;
-    }
-    return "Not Found";
-  });
-  app.post("/customers/auth/local", { scheme: addSchema }, async (req) => {
-    const { name, email, password } = req.body;
-    const customer = (await app.source.getCustomer(email)).rows[0];
-    if (customer) {
-      if (await app.utils.checkPassword(password, customer?.password_hash)) {
-        const { customer_id, name, email, account_type, profile } = customer;
-        return { customer_id, name, email, account_type, profile };
-      }
-      return null;
-    } else {
-      // add the customer
-      const result = await app.source.addOrUpdateLocalCustomer("insert", {
-        name,
-        email,
-        account_type: "local",
-        password_hash: await app.utils.hashPassword(password),
-      });
-      if (result.rowCount) {
-        return { name, email, account_type: "local" };
-      }
-      return null;
-    }
-  });
-  app.put("/customers/:id", { scheme: updateSchema }, async (req) => {
-    const id = req.params.id;
-    let Customer = (await app.source.getCustomer(id)).rows[0];
-    if (Customer) {
-      const { name, bio, birth_date, nationality } = Object.assign(
-        Customer,
-        req.body,
-      );
-      const result = await app.source.updateCustomer({
-        id,
-        name,
-        bio,
-        birth_date,
-        nationality,
-      });
-      if (result.rowCount) {
-        return "Customer updated.";
-      }
-    }
-    return "Customer not updated.";
-  });
-  app.delete("/customers/:id", { scheme: idSchema }, async (req) => {
-    const result = await app.source.removeCustomer(req.params.id);
-    if (result.rowCount) {
-      return "Customer removed";
-    }
-    return "Customer remove failed.";
-  });
+      },
+    })
+    .post("/customers/auth/local", {
+      scheme: addSchema,
+      handler: async (req) => {
+        const { name, email, password } = req.body;
+        const customer = (await app.source.getCustomer(email))?.rows[0] ?? null;
+        if (customer) {
+          if (
+            await app.utils.checkPassword(password, customer?.password_hash)
+          ) {
+            const { customer_id, name, email, account_type, profile } =
+              customer;
+            return { customer_id, name, email, account_type, profile };
+          }
+          return null;
+        } else {
+          // add the customer
+          return await app.source.upsertCustomer("insert", {
+            name,
+            email,
+            account_type: "local",
+            password_hash: await app.utils.hashPassword(password),
+          });
+        }
+      },
+    })
+    .put("/customers/:email", {
+      scheme: app.schemas.putSchema(updateSchema),
+      handler: async (req) => {
+        let target =
+          (await app.source.getCustomer(req.params.email))?.rows[0] ?? null;
+        return target
+          ? await app.source.upsertCustomer(
+              "update",
+              Object.assign(target, {
+                ...req.body,
+                email: req.params.email,
+                password_hash: req.body.password
+                  ? await app.utils.hashPassword(req.body.password)
+                  : target.password_hash || null,
+              }),
+            )
+          : false;
+      },
+    })
+    .delete("/customers/:email", {
+      scheme: app.schemas.idSchema,
+      handler: async (req) =>
+        ((await app.source.getCustomer(req.params.email))?.rows[0] ?? null)
+          ? await app.source.removeCustomer(req.params.email)
+          : false,
+    });
 }

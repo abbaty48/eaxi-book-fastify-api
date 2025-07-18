@@ -40,10 +40,14 @@ export default fastifyPlugin(async (app) => {
             type: "object",
             properties: {
               q: { type: "string" },
-              page: { type: "number", default: page },
-              limit: { type: "number", default: limit },
-              order_by: { type: "string", default: order_by },
-              sort: { type: "string", enum: ["asc", "desc"], default: sort },
+              page: { type: "number", default: page || 0 },
+              limit: { type: "number", default: limit || 10 },
+              order_by: { type: "string", default: order_by || "created_at" },
+              sort: {
+                type: "string",
+                enum: ["asc", "desc"],
+                default: sort || "asc",
+              },
             },
           },
         };
