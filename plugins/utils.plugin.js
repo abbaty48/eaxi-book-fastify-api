@@ -26,14 +26,7 @@ export default fastifyPlugin(async (app) => {
           },
         },
       },
-      getSchema(
-        { page, limit, sort, order_by } = {
-          page: 0,
-          limit: 10,
-          sort: "asc",
-          order_by: "created_at",
-        },
-      ) {
+      getSchema({ page, limit, sort, order_by }) {
         return {
           type: "object",
           query: {
