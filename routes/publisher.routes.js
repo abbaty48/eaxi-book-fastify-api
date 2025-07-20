@@ -1,28 +1,3 @@
-const idSchema = {
-  type: "object",
-  params: {
-    type: "object",
-    required: ["id"],
-    properties: {
-      id: { type: "string", maxLength: 40 },
-    },
-  },
-};
-
-const getSchema = {
-  type: "object",
-  query: {
-    type: "object",
-    properties: {
-      q: { type: "string" },
-      sort: { type: "string", enum: ["asc", "desc"], default: "asc" },
-      order_by: { type: "string", default: "created_at" },
-      limit: { type: "number", default: 10 },
-      page: { type: "number", default: 0 },
-    },
-  },
-};
-
 const addSchema = {
   type: "object",
   required: ["name", "founded_year"],
@@ -35,8 +10,6 @@ const addSchema = {
 };
 
 const updateSchema = {
-  type: "object",
-  params: idSchema.params,
   body: {
     type: "object",
     properties: {
@@ -49,44 +22,47 @@ const updateSchema = {
 };
 
 export default function (app) {
-  app.get(
-    "/publishers",
-    { schema: getSchema },
-    async (req) => (await app.source.getPublishers(req.query)).rows,
-  );
-  app.get(
-    "/publishers/:id",
-    { schema: idSchema },
-    async (req) => (await app.source.getPublisher(req.params?.id)).rows[0],
-  );
-  app.post("/publishers", { schema: addSchema }, async (req) => {
-    const result = await app.source.addPublisher(req.body);
-    if (result.rowCount) {
-      return true;
-    }
-    return false;
-  });
-  app.put("/publishers/:id", { schema: updateSchema }, async (req) => {
-    let target = (await app.source.getPublisher(req.params?.id)).rows[0];
-    if (target) {
-      const new_target = Object.assign(target, req.body);
-      if (
-        (await app.source.updatePublisher(req.params?.id, new_target)).rowCount
-      ) {
-        return true;
-      }
-      return false;
-    }
-    return false;
-  });
-  app.delete("/publishers/:id", { schema: idSchema }, async (req) => {
-    let target = (await app.source.getPublisher(req.params?.id)).rows[0];
-    if (target) {
-      if ((await app.source.deletePublisher(req.params?.id)).rowCount) {
-        return true;
-      }
-      return false;
-    }
-    return false;
-  });
+  app
+    /** */
+    .get("/publishers", {
+      schema: app.schemas.getSchema(),
+      handler: async (req) =>
+        (await app.source.getPublishers(req.query))?.rows ?? [],
+    })
+    /** */
+    .get("/publishers/:id", {
+      schema: app.schemas.idSchema,
+      handler: async (req) =>
+        (await app.source.getPublisher(req.params?.id))?.rows[0] ?? null,
+    })
+    /** */
+    .post("/publishers", {
+      schema: addSchema,
+      handler: async (req) => await app.source.addPublisher(req.body),
+    })
+    /** */
+    .put("/publishers/:id", {
+      schema: app.schemas.putSchema(updateSchema),
+      handler: async (req) => {
+        let target =
+          (await app.source.getPublisher(req.params?.id))?.rows[0] ?? null;
+        return target
+          ? await app.source.updatePublisher(
+              req.params?.id,
+              Object.assign(target, req.body),
+            )
+          : false;
+      },
+    })
+    /** */
+    .delete("/publishers/:id", {
+      schema: app.schemas.idSchema,
+      handler: async (req) => {
+        let target =
+          (await app.source.getPublisher(req.params?.id))?.rows[0] ?? null;
+        return target
+          ? await app.source.deletePublisher(req.params?.id)
+          : false;
+      },
+    });
 }

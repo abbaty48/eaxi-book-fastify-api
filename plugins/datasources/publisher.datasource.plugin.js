@@ -7,8 +7,8 @@ export default function publisherDatasource(app) {
           `SELECT * FROM publishers WHERE publisher_id = $1`,
           [id],
         );
-      } catch (err) {
-        throw err;
+      } catch {
+        return false;
       } finally {
         connect.release();
       }
@@ -18,12 +18,12 @@ export default function publisherDatasource(app) {
       try {
         return await app.pg.query(
           `SELECT * FROM publishers
-          ORDER BY ${order_by} ${sort}
-          LIMIT $1 OFFSET $2`,
+            ORDER BY ${order_by} ${sort}
+            LIMIT $1 OFFSET $2`,
           [limit, page],
         );
-      } catch (err) {
-        throw err;
+      } catch {
+        return false;
       } finally {
         connect.release();
       }
@@ -31,15 +31,16 @@ export default function publisherDatasource(app) {
     async addPublisher({ name, founded_year, headquarters, website }) {
       const connect = await app.pg.connect();
       try {
-        return await app.pg.query(
+        await app.pg.query(
           `
           INSERT INTO publishers(name, founded_year, headquarters, website)
           VALUES($1,$2,$3,$4)
           `,
           [name, founded_year, headquarters, website],
         );
-      } catch (err) {
-        throw err;
+        return true;
+      } catch {
+        return false;
       } finally {
         connect.release();
       }
@@ -47,7 +48,7 @@ export default function publisherDatasource(app) {
     async updatePublisher(id, { name, founded_year, headquarters, website }) {
       const connect = await app.pg.connect();
       try {
-        return await app.pg.query(
+        await app.pg.query(
           `
           UPDATE publishers
           SET name = $2, founded_year = $3, headquarters = $4, website = $5
@@ -55,8 +56,9 @@ export default function publisherDatasource(app) {
         `,
           [id, name, founded_year, headquarters, website],
         );
+        return true;
       } catch (err) {
-        throw err;
+        return false;
       } finally {
         connect.release();
       }
@@ -64,12 +66,12 @@ export default function publisherDatasource(app) {
     async deletePublisher(id) {
       const connect = await app.pg.connect();
       try {
-        return await app.pg.query(
-          `DELETE  FROM publishers WHERE publisher_id = $1`,
-          [id],
-        );
-      } catch (err) {
-        throw err;
+        await app.pg.query(`DELETE  FROM publishers WHERE publisher_id = $1`, [
+          id,
+        ]);
+        return true;
+      } catch {
+        return false;
       } finally {
         connect.release();
       }
