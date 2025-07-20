@@ -45,7 +45,7 @@ export default async function (app) {
     .register(publisherRoutes)
     .register(categoryRoutes)
     .register(wishlistRoutes)
-    .register(reviewRoutes) // refactor: strict mode: missing type "object" for keyword "properties" at "#" (strictTypes
+    .register(reviewRoutes)
     .register(orderRoutes)
     .register(bookRoutes) // strict mode: missing type "object" for keyword "properties" at "#" (strictTypes
     .register(cartRoutes)
