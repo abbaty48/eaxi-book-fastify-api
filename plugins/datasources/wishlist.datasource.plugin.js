@@ -10,7 +10,7 @@ export default function (app) {
         `,
           [id],
         );
-      } catch (err) {
+      } catch {
         return null;
       } finally {
         connect.release();
@@ -27,7 +27,7 @@ export default function (app) {
           [customer_id, book_id],
         );
       } catch (err) {
-        throw err;
+        return null;
       } finally {
         connect.release();
       }
@@ -41,7 +41,7 @@ export default function (app) {
           [limit, page],
         );
       } catch (err) {
-        throw err;
+        return null;
       } finally {
         connect.release();
       }
@@ -60,7 +60,7 @@ export default function (app) {
         );
         return true;
       } catch (err) {
-        throw err;
+        return false;
       } finally {
         connect.release();
       }
@@ -85,7 +85,7 @@ export default function (app) {
         );
         return true;
       } catch (err) {
-        throw false;
+        return false;
       } finally {
         connect.release();
       }
