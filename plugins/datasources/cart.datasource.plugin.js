@@ -7,8 +7,8 @@ export default function cartDatasource(app) {
           `SELECT * FROM cart_items as ct, carts AS c WHERE ct.cart_id = $1 AND c.cart_id = $1`,
           [id],
         );
-      } catch (err) {
-        throw err;
+      } catch {
+        return null;
       } finally {
         connect.release();
       }
@@ -21,8 +21,8 @@ export default function cartDatasource(app) {
             ON  ct.cart_id = c.cart_id AND c.customer_id = $1 AND ct.book_id = $2 OR ct.cart_id = $3`,
           [customer_id, book_id, cart_id],
         );
-      } catch (err) {
-        throw err;
+      } catch {
+        return null;
       } finally {
         connect.release();
       }
@@ -35,8 +35,8 @@ export default function cartDatasource(app) {
               ORDER BY ${order_by} ${sort} LIMIT $1 OFFSET $2`,
           [limit, page],
         );
-      } catch (err) {
-        throw err;
+      } catch {
+        return null;
       } finally {
         connect.release();
       }
@@ -62,7 +62,7 @@ export default function cartDatasource(app) {
     async updateCart(id, { coupon_code, is_active, quantity }) {
       const connect = await app.pg.connect();
       try {
-        return await app.pg.query(
+        await app.pg.query(
           `WITH c AS (
                 UPDATE  carts SET coupon_code = $2, is_active = $3
                 WHERE carts.cart_id = $1
@@ -75,8 +75,9 @@ export default function cartDatasource(app) {
             `,
           [id, coupon_code, is_active, quantity],
         );
-      } catch (err) {
-        throw err;
+        return true;
+      } catch {
+        return false;
       } finally {
         connect.release();
       }
@@ -84,9 +85,10 @@ export default function cartDatasource(app) {
     async removeCart(id) {
       const connect = await app.pg.connect();
       try {
-        return await app.pg.query(`DELETE FROM carts WHERE cart_id = $1`, [id]);
-      } catch (err) {
-        throw err;
+        await app.pg.query(`DELETE FROM carts WHERE cart_id = $1`, [id]);
+        return true;
+      } catch {
+        return false;
       } finally {
         connect.release();
       }

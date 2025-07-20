@@ -1,27 +1,3 @@
-const idSchema = {
-  type: "object",
-  params: {
-    type: "object",
-    properties: {
-      id: { type: "string", maxLength: 40 },
-    },
-  },
-};
-
-const getSchema = {
-  type: "object",
-  query: {
-    type: "object",
-    properties: {
-      q: { type: "string" },
-      limit: { type: "number", default: 10 },
-      page: { type: "number", default: 0 },
-      order_by: { type: "string", default: "created_at" },
-      sort: { type: "string", enum: ["asc", "desc"], default: "asc" },
-    },
-  },
-};
-
 const addSchema = {
   type: "object",
   body: {
@@ -39,7 +15,6 @@ const addSchema = {
 
 const updateSchema = {
   type: "object",
-  params: idSchema.params,
   body: {
     type: "object",
     properties: addSchema.properties,
@@ -47,32 +22,45 @@ const updateSchema = {
 };
 
 export default function (app) {
-  app.get("/carts", { schema: getSchema }, async (req) => {
-    return (await app.source.getCarts(req.query)).rows;
-  });
-  app.get("/carts/:id", { schema: idSchema }, async (req) => {
-    return (await app.source.getCart(req.params.id))?.rows[0] ?? null;
-  });
-  app.post("/carts", { schema: addSchema }, async (req) => {
-    const exists = await app.source.getCartItem(req.body);
-    return exists.rowCount
-      ? exists.rows[0]
-      : await app.source.addCart(req.body);
-  });
-  app.put("/carts/:id", { schema: updateSchema }, async (req) => {
-    let cart = (await app.source.getCart(req.params.id)).rows[0];
-    if (cart) {
-      Object.assign(cart, req.body);
-      console.log("NEW TARGET: ", cart);
-      return (await app.source.updateCart(req.params.id, cart)) ? true : false;
-    }
-    return false;
-  });
-  app.delete("/carts/:id", async (req) => {
-    return (await app.source.getCart(req.params.id)).rows[0]
-      ? (await app.source.removeCart(req.params.id)).rowCount
-        ? true
-        : false
-      : false;
-  });
+  app
+    .get("/carts", {
+      schema: app.schemas.getSchema(),
+      handler: async (req) => {
+        return (await app.source.getCarts(req.query))?.rows ?? [];
+      },
+    })
+    .get("/carts/:id", {
+      schema: app.schemas.idSchema,
+      handler: async (req) => {
+        return (await app.source.getCart(req.params.id))?.rows[0] ?? null;
+      },
+    })
+    .post("/carts", {
+      schema: addSchema,
+      handler: async (req) => {
+        const exists =
+          (await app.source.getCartItem(req.body))?.rows[0] ?? null;
+        return exists ?? (await app.source.addCart(req.body));
+      },
+    })
+    .put("/carts/:id", {
+      schema: app.schemas.putSchema(updateSchema),
+      handler: async (req) => {
+        let cart = (await app.source.getCart(req.params.id))?.rows[0] ?? null;
+        return cart
+          ? await app.source.updateCart(
+              req.params.id,
+              Object.assign(cart, req.body),
+            )
+          : false;
+      },
+    })
+    .delete("/carts/:id", {
+      schema: app.schemas.idSchema,
+      handler: async (req) => {
+        return ((await app.source.getCart(req.params.id))?.rows[0] ?? null)
+          ? await app.source.removeCart(req.params.id)
+          : false;
+      },
+    });
 }
