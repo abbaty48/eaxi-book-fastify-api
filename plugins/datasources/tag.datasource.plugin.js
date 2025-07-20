@@ -20,7 +20,7 @@ export default function (app) {
           [limit, page],
         );
       } catch (err) {
-        return false;
+        return null;
       } finally {
         connect.release();
       }

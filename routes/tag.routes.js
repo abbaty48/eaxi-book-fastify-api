@@ -8,20 +8,6 @@ const paramSchema = {
   },
 };
 
-const getSchema = {
-  type: "object",
-  query: {
-    type: "object",
-    properties: {
-      q: { type: "string" },
-      limit: { type: "number", default: 10 },
-      page: { type: "number", default: 0 },
-      order_by: { type: "string", default: "created_at" },
-      sort: { type: "string", enum: ["asc", "desc"], default: "asc" },
-    },
-  },
-};
-
 const addSchema = {
   type: "object",
   required: ["name"],
@@ -29,21 +15,34 @@ const addSchema = {
 };
 
 export default function (app) {
-  app.get("/tags", { schema: getSchema }, async (req) => {
-    return (await app.source.getTags(req.query))?.rows ?? [];
-  });
-  app.get("/tags/:name", { schema: paramSchema }, async (req) => {
-    return (await app.source.getTag(req.params.name))?.rows[0] ?? null;
-  });
-  app.post("/tags", { schema: addSchema }, async (req) => {
-    return (
-      (await app.source.getTag(req.body.name))?.rows[0] ??
-      (await app.source.addTag(req.body.name))
-    );
-  });
-  app.delete("/tags/:name", { schema: paramSchema }, async (req) => {
-    return (await app.source.getTag(req.params.name))?.rows[0]
-      ? await app.source.removeTag(req.params.name)
-      : false;
-  });
+  app
+    .get("/tags", {
+      schema: app.schemas.getSchema(),
+      handler: async (req) => {
+        return (await app.source.getTags(req.query))?.rows ?? [];
+      },
+    })
+    .get("/tags/:name", {
+      schema: paramSchema,
+      handler: async (req) => {
+        return (await app.source.getTag(req.params.name))?.rows[0] ?? null;
+      },
+    })
+    .post("/tags", {
+      schema: addSchema,
+      handler: async (req) => {
+        return (
+          (await app.source.getTag(req.body.name))?.rows[0] ??
+          (await app.source.addTag(req.body.name))
+        );
+      },
+    })
+    .delete("/tags/:name", {
+      schema: paramSchema,
+      handler: async (req) => {
+        return (await app.source.getTag(req.params.name))?.rows[0]
+          ? await app.source.removeTag(req.params.name)
+          : false;
+      },
+    });
 }
