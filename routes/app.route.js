@@ -47,7 +47,7 @@ export default async function (app) {
     .register(wishlistRoutes)
     .register(reviewRoutes)
     .register(orderRoutes)
-    .register(bookRoutes) // strict mode: missing type "object" for keyword "properties" at "#" (strictTypes
+    .register(bookRoutes)
     .register(cartRoutes)
     .register(tagRoutes)
     .after((err) => {
