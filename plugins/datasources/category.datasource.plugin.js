@@ -6,13 +6,13 @@ export default function categoryDatasource(app) {
         return await app.pg.query(`SELECT * FROM categories WHERE name = $1`, [
           name,
         ]);
-      } catch (err) {
-        throw err;
+      } catch {
+        return false;
       } finally {
         connect.release();
       }
     },
-    async getCategories({ limit, sort, page }) {
+    async getCategories({ limit, page }) {
       const connect = await app.pg.connect();
       try {
         return await app.pg.query(
@@ -22,8 +22,8 @@ export default function categoryDatasource(app) {
           `,
           [limit, page],
         );
-      } catch (err) {
-        throw err;
+      } catch {
+        return false;
       } finally {
         connect.release();
       }
@@ -31,12 +31,13 @@ export default function categoryDatasource(app) {
     async addCategory({ name, description }) {
       const connect = await app.pg.connect();
       try {
-        return await app.pg.query(
+        await app.pg.query(
           `INSERT  INTO categories(name, description) VALUES($1, $2)`,
           [name, description],
         );
-      } catch (err) {
-        throw err;
+        return true;
+      } catch {
+        return false;
       } finally {
         connect.release();
       }
@@ -44,12 +45,13 @@ export default function categoryDatasource(app) {
     async updateCategory({ description, name }) {
       const connect = await app.pg.connect();
       try {
-        return await app.pg.query(
+        await app.pg.query(
           `UPDATE categories SET description = $1 WHERE name = $2`,
           [description, name],
         );
-      } catch (err) {
-        throw err;
+        return true;
+      } catch {
+        return false;
       } finally {
         connect.release();
       }
@@ -57,11 +59,10 @@ export default function categoryDatasource(app) {
     async deleteCategory(name) {
       const connect = await app.pg.connect();
       try {
-        return await app.pg.query(`DELETE FROM categories WHERE name = $1`, [
-          name,
-        ]);
-      } catch (err) {
-        throw err;
+        await app.pg.query(`DELETE FROM categories WHERE name = $1`, [name]);
+        return true;
+      } catch {
+        return false;
       } finally {
         connect.release();
       }
