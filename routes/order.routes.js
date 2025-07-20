@@ -1,13 +1,3 @@
-const idSchema = {
-  type: "object",
-  params: {
-    type: "object",
-    required: ["id"],
-    properties: {
-      id: { type: "string", maxLength: 36 },
-    },
-  },
-};
 /* */
 const addSchema = {
   type: "object",
@@ -42,49 +32,44 @@ const addSchema = {
 /* */
 const updateSchema = {
   type: "object",
-  params: {
-    type: "object",
-    properties: idSchema.params.properties,
-  },
   body: {
     type: "object",
     properties: addSchema.properties,
   },
 };
-/* */
-const getSchema = {
-  type: "object",
-  query: {
-    type: "object",
-    properties: {
-      q: { type: "string" },
-      page: { type: "number", default: 0 },
-      limit: { type: "number", default: 10 },
-      order_by: { type: "string", default: "updated_at" },
-      sort: { type: "string", enum: ["asc", "desc"], default: "asc" },
-    },
-  },
-};
 
 export default function (app) {
-  app.get("/orders", { schema: getSchema }, async (req) => {
-    return (await app.source.getOrders(req.query))?.rows ?? [];
-  });
-  app.post("/orders", { schema: addSchema }, async (req) => {
-    return await app.source.upsertOrder("insert", req.body);
-  });
-  app.get("/orders/:id", { schema: idSchema }, async (req) => {
-    return (await app.source.getOrder(req.params.id))?.rows[0] ?? null;
-  });
-  app.put("/orders/:id", { schema: updateSchema }, async (req) => {
-    let target = (await app.source.getOrder(req.params.id))?.rows[0] ?? null;
-    return target
-      ? await app.source.upsertOrder("update", Object.assign(target, req.body))
-      : false;
-  });
-  app.delete("/orders/:id", { schema: idSchema }, async (req) => {
-    return ((await app.source.getOrder(req.params.id))?.rows[0] ?? null)
-      ? await app.source.removeOrder(req.params.id)
-      : false;
-  });
+  app
+    .get(
+      "/orders",
+      { schema: app.schemas.getSchema("updated_at") },
+      async (req) => {
+        return (await app.source.getOrders(req.query))?.rows ?? [];
+      },
+    )
+    .post("/orders", { schema: addSchema }, async (req) => {
+      return await app.source.upsertOrder("insert", req.body);
+    })
+    .get("/orders/:id", { schema: app.schemas.idSchema }, async (req) => {
+      return (await app.source.getOrder(req.params.id))?.rows[0] ?? null;
+    })
+    .put(
+      "/orders/:id",
+      { schema: app.schemas.putSchema(updateSchema) },
+      async (req) => {
+        let target =
+          (await app.source.getOrder(req.params.id))?.rows[0] ?? null;
+        return target
+          ? await app.source.upsertOrder(
+              "update",
+              Object.assign(target, req.body),
+            )
+          : false;
+      },
+    )
+    .delete("/orders/:id", { schema: app.schemas.idSchema }, async (req) => {
+      return ((await app.source.getOrder(req.params.id))?.rows[0] ?? null)
+        ? await app.source.removeOrder(req.params.id)
+        : false;
+    });
 }
