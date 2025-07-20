@@ -2,15 +2,15 @@ import fastifyPlugin from "fastify-plugin";
 import fastifyPostgres from "@fastify/postgres";
 import authorDatasource from "./author.datasource.js";
 import tagDatasource from "./tag.datasource.plugin.js";
-import cartDatasource from "./cart.datasource.js";
+import cartDatasource from "./cart.datasource.plugin.js";
 import bookDatasource from "./book.datasource.plugin.js";
 import orderDatasource from "./order.datasource.plugin.js";
 import adminDatasource from "./admin.datasource.plugin.js";
 import reviewDatasource from "./review.datasource.plugin.js";
 import wishlistDatasource from "./wishlist.datasource.plugin.js";
 import categoryDatasource from "./category.datasource.plugin.js";
-import customerDatasource from "./customer.datasource.plugin.js";
 import publisherDatasource from "./publisher.datasource.plugin.js";
+import customerDatasource from "./customer.datasource.plugin.js";
 
 export default fastifyPlugin(async (app) => {
   app.log.info(`Connecting to database...`);

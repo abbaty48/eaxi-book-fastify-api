@@ -24,7 +24,7 @@ export default async function (app) {
   /* */
   app.setNotFoundHandler(async (_, reply) => {
     reply.code(404);
-    return "I'm sorry, I couldn't find what you were looking for.";
+    return "I'm sorry, I couldn't find what you were looking for, please check the endpoint reference.";
   });
   /* */
   app.get("/", async (_) => {

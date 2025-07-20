@@ -5,7 +5,10 @@ import fastifyEnv from "@fastify/env";
 
 export const fastifyConfig = {
   logger: true,
+  bodyLimit: 1048576,
+  caseSensitive: false,
   removeAdditional: "all",
+  ignoreTrailingSlash: true,
   ajv: { customOptions: { allErrors: true }, coerceTypes: false },
 };
 
