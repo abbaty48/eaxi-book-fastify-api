@@ -52,7 +52,7 @@ export default async function (app) {
     .register(tagRoutes)
     .after((err) => {
       app.log.error(
-        `Hmms, seems like one of route plugin has error: "${err?.message}", continuing anyway.`,
+        `Hmms, it seems like one of the route plugin has an error: "${err?.message}", continuing anyway.`,
       );
     });
 }
