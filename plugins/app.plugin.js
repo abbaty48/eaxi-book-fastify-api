@@ -6,6 +6,7 @@ import fastifyHelmet from "@fastify/helmet";
 import appRoutes from "../routes/app.route.js";
 import datasourcePlugin from "./datasources/datasource.plugin.js";
 import config, { fastifyConfig, configOptions } from "./config.plugin.js";
+import metricPlugin from "./metric.plugin.js";
 
 export default async function () {
   const app = fastify(fastifyConfig);
@@ -17,6 +18,7 @@ export default async function () {
     .register(datasourcePlugin)
     .register(oauthPlugin)
     .register(utilsPlugin)
+    .register(metricPlugin)
     .register(appRoutes, { prefix: "/api" });
   return app;
 }

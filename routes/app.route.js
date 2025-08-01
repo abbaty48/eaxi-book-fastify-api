@@ -19,6 +19,7 @@ export default async function (app) {
     }
     request.log.error({ err });
     reply.code(err.statusCode || 500);
+    console.log(err);
     return "I'm sorry, there was an error processing your request.";
   });
   /* */

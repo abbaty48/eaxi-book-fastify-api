@@ -2,6 +2,7 @@
 /* Define application general configurations */
 import fastifyPlugin from "fastify-plugin";
 import fastifyEnv from "@fastify/env";
+import { config } from "dotenv";
 
 export const fastifyConfig = {
   logger: true,
