@@ -3,7 +3,7 @@
 # See https://fly.io/docs/reference/configuration/ for information about how to use this file.
 #
 
-app = 'eaxi-books-fastify-misty-forest-9043'
+app = 'eaxi-books-fastify'
 primary_region = 'jnb'
 
 [build]
